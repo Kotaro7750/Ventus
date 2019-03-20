@@ -10,8 +10,8 @@ import (
 
 const (
 	// action is used for slack attament action.
-	actionSelect = "select"
-	actionStart  = "start"
+	actionWind   = "wind"
+	actionOrder  = "order"
 	actionCancel = "cancel"
 )
 
@@ -66,18 +66,17 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		CallbackID: "command",
 		Actions: []slack.AttachmentAction{
 			{
-				Name: actionSelect,
-				Type: "select",
-				Options: []slack.AttachmentActionOption{
-					{
-						Text:  "風速",
-						Value: "wind",
-					},
-					{
-						Text:  "発注板",
-						Value: "order",
-					},
-				},
+				Name:  actionWind,
+				Text:  "風速",
+				Type:  "button",
+				Style: "danger",
+			},
+
+			{
+				Name:  actionOrder,
+				Text:  "広報物発注板",
+				Type:  "button",
+				Style: "danger",
 			},
 
 			{

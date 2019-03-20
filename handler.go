@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/nlopes/slack"
 )
@@ -55,34 +54,12 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	action := message.Actions[0]
 	switch action.Name {
-	case actionSelect:
-		value := action.SelectedOptions[0].Value
-
-		// Overwrite original drop down message.
-		originalMessage := message.OriginalMessage
-		originalMessage.Attachments[0].Text = fmt.Sprintf("OK to order %s ?", strings.Title(value))
-		originalMessage.Attachments[0].Actions = []slack.AttachmentAction{
-			{
-				Name:  actionStart,
-				Text:  "Yes",
-				Type:  "button",
-				Value: "start",
-				Style: "primary",
-			},
-			{
-				Name:  actionCancel,
-				Text:  "No",
-				Type:  "button",
-				Style: "danger",
-			},
-		}
-
-		w.Header().Add("Content-type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(&originalMessage)
+	case actionWind:
+		title := fmt.Sprintf("風速")
+		responseMessage(w, message.OriginalMessage, title, "")
 		return
-	case actionStart:
-		title := ":ok: your order was submitted! yay!"
+	case actionOrder:
+		title := fmt.Sprintf("発注板")
 		responseMessage(w, message.OriginalMessage, title, "")
 		return
 	case actionCancel:
@@ -107,6 +84,8 @@ func responseMessage(w http.ResponseWriter, original slack.Message, title, value
 			Short: false,
 		},
 	}
+
+	original.ReplaceOriginal = true
 
 	w.Header().Add("Content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
