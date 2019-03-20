@@ -101,13 +101,11 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		},
 	}
 
-	params := slack.PostMessageParameters{
-		Attachments: []slack.Attachment{
-			attachment,
-		},
-	}
+	msgOptText := slack.MsgOptionText("", true)
 
-	if _, _, err := s.client.PostMessage(ev.Channel, "", params); err != nil {
+	msgOptAttachment := slack.MsgOptionAttachments(attachment)
+
+	if _, _, err := s.client.PostMessage(ev.Channel, msgOptText, msgOptAttachment); err != nil {
 		return fmt.Errorf("failed to post message: %s", err)
 	}
 
