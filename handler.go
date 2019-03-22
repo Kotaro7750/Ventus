@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 
+	//"github.com/Kotaro7750/Ventus/wind"
+	"./wind"
 	"github.com/nlopes/slack"
 )
 
@@ -56,6 +58,8 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch action.Name {
 	case actionWind:
 		title := fmt.Sprintf("風速")
+		tmp := wind.MakeForecastData("https://tenki.jp/forecast/3/16/4410/13110/10days.html", "./tmp.txt")
+		fmt.Println(tmp)
 		responseMessage(w, message.OriginalMessage, title, "")
 		return
 	case actionOrder:
