@@ -53,15 +53,9 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 		return nil
 	}
 
-	// Parse message
-	m := strings.Split(strings.TrimSpace(ev.Msg.Text), " ")[1:]
-	if len(m) == 0 || m[0] != "hey" {
-		return fmt.Errorf("invalid message")
-	}
-
 	// value is passed to message handler when request is approved.
 	attachment := slack.Attachment{
-		Text:       "どのコマンド？",
+		Text:       "なあに？",
 		Color:      "#f9a41b",
 		CallbackID: "command",
 		Actions: []slack.AttachmentAction{
@@ -81,7 +75,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 			{
 				Name:  actionCancel,
-				Text:  "Cancel",
+				Text:  "なんでもない！",
 				Type:  "button",
 				Style: "danger",
 			},

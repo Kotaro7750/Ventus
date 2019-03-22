@@ -6,19 +6,27 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
+const (
+	MidNight  = "午前3時"
+	Morning   = "午前9時"
+	Afternoon = "午後3時"
+	Night     = "午後9時"
+)
+
 // ForecastData is a data of forecast of specific date
 type ForecastData struct {
 	Date               string
-	WindSpeedMidNight  string
-	WindSpeedMorning   string
-	WindSpeedAfternoon string
-	WindSpeedEvening   string
+	WindSpeedMidNight  int
+	WindSpeedMorning   int
+	WindSpeedAfternoon int
+	WindSpeedNight     int
 }
 
 //MakeForecastData returns array of ForecastData
@@ -41,17 +49,22 @@ func MakeForecastData(url string, filePath string) []ForecastData {
 		forecastDataArray := strings.Fields(text)
 
 		date := forecastDataArray[0]
-		windSpeedMidNight := forecastDataArray[2]
-		windSpeedMorning := forecastDataArray[4]
-		windSpeedAfternoon := forecastDataArray[6]
-		windSpeedNight := forecastDataArray[8]
+		var windSpeed = []string{}
+		for i := 2; i <= 8; i += 2 {
+			windSpeed = append(windSpeed, strings.Split(forecastDataArray[i], "m")[0])
+		}
+
+		windSpeedMidNight, _ := strconv.Atoi(windSpeed[0])
+		windSpeedMorning, _ := strconv.Atoi(windSpeed[1])
+		windSpeedAfternoon, _ := strconv.Atoi(windSpeed[2])
+		windSpeedNight, _ := strconv.Atoi(windSpeed[3])
 
 		forecastDatas = append(forecastDatas, ForecastData{
 			Date:               date,
 			WindSpeedMidNight:  windSpeedMidNight,
 			WindSpeedMorning:   windSpeedMorning,
 			WindSpeedAfternoon: windSpeedAfternoon,
-			WindSpeedEvening:   windSpeedNight,
+			WindSpeedNight:     windSpeedNight,
 		})
 	}
 
@@ -129,4 +142,55 @@ func isRequired(text string) (bool, linefeed bool) {
 	}
 
 	return true, false
+}
+
+// IsExceededLimit judges if windspeed exceed limit
+func (forecastData *ForecastData) IsExceededLimit(limit int) (bool, string) {
+	isExceed := false
+	res := ""
+	if forecastData.WindSpeedMidNight >= limit {
+		isExceed = true
+		res += MidNight + "、"
+	}
+	if forecastData.WindSpeedMorning >= limit {
+		isExceed = true
+		res += Morning + "、"
+	}
+	if forecastData.WindSpeedAfternoon >= limit {
+		isExceed = true
+		res += Afternoon + "、"
+	}
+	if forecastData.WindSpeedNight >= limit {
+		isExceed = true
+		res += Night + "、"
+	}
+
+	if isExceed {
+		return isExceed, forecastData.Date + res
+	}
+	return isExceed, ""
+}
+
+//MaxSpeed returns maxspeed and it's time
+func (forecastData *ForecastData) MaxSpeed() (int, string) {
+	max := -1
+	res := ""
+	if forecastData.WindSpeedMidNight > max {
+		max = forecastData.WindSpeedMidNight
+		res = MidNight
+	}
+	if forecastData.WindSpeedMorning > max {
+		max = forecastData.WindSpeedMorning
+		res = Morning
+	}
+	if forecastData.WindSpeedAfternoon > max {
+		max = forecastData.WindSpeedAfternoon
+		res = Afternoon
+	}
+	if forecastData.WindSpeedNight > max {
+		max = forecastData.WindSpeedNight
+		res = Night
+	}
+
+	return max, res
 }

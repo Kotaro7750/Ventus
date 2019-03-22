@@ -2,15 +2,22 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	//"github.com/Kotaro7750/Ventus/wind"
 	"./wind"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/nlopes/slack"
+)
+
+const (
+	forecastURL      = "https://tenki.jp/forecast/3/16/4410/13110/10days.html"
+	forecastFilePath = "./tmp.txt"
+	limitSpeed       = 10
 )
 
 // interactionHandler handles interactive message response.
@@ -54,21 +61,53 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var env EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		log.Printf("[ERROR] Failed to process env var: %s", err)
+		return
+	}
+
 	action := message.Actions[0]
 	switch action.Name {
 	case actionWind:
-		title := fmt.Sprintf("風速")
-		tmp := wind.MakeForecastData("https://tenki.jp/forecast/3/16/4410/13110/10days.html", "./tmp.txt")
-		fmt.Println(tmp)
-		responseMessage(w, message.OriginalMessage, title, "")
+
+		forecastDatas := wind.MakeForecastData(forecastURL, forecastFilePath)
+		forecastDataNum := len(forecastDatas)
+
+		text := "この" + strconv.Itoa(forecastDataNum) + "日間の最大風速は"
+		exceedLimit := ""
+		max := -1
+		maxDay := ""
+		maxTime := ""
+
+		for i := 0; i < forecastDataNum; i++ {
+			forecastData := forecastDatas[i]
+			if dayMax, res := forecastData.MaxSpeed(); dayMax > max {
+				max = dayMax
+				maxDay = forecastData.Date
+				maxTime = res
+			}
+			if isExceed, res := forecastData.IsExceededLimit(limitSpeed); isExceed {
+				exceedLimit += res
+			}
+		}
+
+		text += maxDay + maxTime + "の" + strconv.Itoa(max) + "m/sだよ！\n" + strconv.Itoa(limitSpeed) + "m/sを超える日は"
+		if exceedLimit != "" {
+			text += exceedLimit + "だよ〜！"
+		} else {
+			text += "ありません！"
+		}
+
+		responseMessage(w, message.OriginalMessage, "", text)
 		return
 	case actionOrder:
-		title := fmt.Sprintf("発注板")
-		responseMessage(w, message.OriginalMessage, title, "")
+		text := "発注板だよ〜！\n" + env.OrderURL
+		responseMessage(w, message.OriginalMessage, "", text)
 		return
 	case actionCancel:
-		title := fmt.Sprintf(":x: @%s canceled the request", message.User.Name)
-		responseMessage(w, message.OriginalMessage, title, "")
+		text := message.User.Name + "さん、じゃあね〜！"
+		responseMessage(w, message.OriginalMessage, "", text)
 		return
 	default:
 		log.Printf("[ERROR] ]Invalid action was submitted: %s", action.Name)
@@ -80,6 +119,7 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // responseMessage response to the original slackbutton enabled message.
 // It removes button and replace it with message which indicate how bot will work
 func responseMessage(w http.ResponseWriter, original slack.Message, title, value string) {
+	original.Attachments[0].Text = ""
 	original.Attachments[0].Actions = []slack.AttachmentAction{} // empty buttons
 	original.Attachments[0].Fields = []slack.AttachmentField{
 		{

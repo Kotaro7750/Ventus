@@ -11,7 +11,7 @@ import (
 
 // https://api.slack.com/slack-apps
 // https://api.slack.com/internal-integrations
-type envConfig struct {
+type EnvConfig struct {
 	// Port is server port to be listened.
 	Port string `envconfig:"PORT" default:"3000"`
 
@@ -27,6 +27,8 @@ type envConfig struct {
 	// ChannelID is slack channel ID where bot is working.
 	// Bot responses to the mention in this channel.
 	ChannelID string `envconfig:"CHANNEL_ID" required:"true"`
+
+	OrderURL string `envconfig:"ORDER_URL" required:true`
 }
 
 func main() {
@@ -34,7 +36,7 @@ func main() {
 }
 
 func _main(args []string) int {
-	var env envConfig
+	var env EnvConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Printf("[ERROR] Failed to process env var: %s", err)
 		return 1
