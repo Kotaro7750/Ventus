@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 
 	"github.com/Kotaro7750/Ventus/wind"
 	"github.com/kelseyhightower/envconfig"
