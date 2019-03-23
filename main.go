@@ -57,7 +57,7 @@ func _main(args []string) int {
 		slackListener.PostWindReport()
 	}
 
-	scheduler.Every().Day().At("12:40").Run(job)
+	scheduler.Every().Day().At("12:00").Run(job)
 
 	// Register handler to receive interactive message
 	// responses from slack (kicked by user action)
