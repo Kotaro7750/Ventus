@@ -12,6 +12,7 @@ deps:
 	go get -u "github.com/kelseyhightower/envconfig"
 	go get -u "github.com/nlopes/slack"
 	go get -u "github.com/Kotaro7750/Ventus/wind"
+	go get -u "github.com/carlescere/scheduler"
 
 clean:
 	$(GOCLEAN)

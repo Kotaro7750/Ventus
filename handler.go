@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	forecastURL      = "https://tenki.jp/forecast/3/16/4410/13110/10days.html"
-	forecastFilePath = "./tmp.txt"
-	limitSpeed       = 10
+	ForecastURL      = "https://tenki.jp/forecast/3/16/4410/13110/10days.html"
+	ForecastFilePath = "./tmp.txt"
+	LimitSpeed       = 10
 )
 
 // interactionHandler handles interactive message response.
@@ -69,9 +69,9 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch action.Name {
 	case actionWind:
 
-		forecastDatas := wind.MakeForecastData(forecastURL, forecastFilePath)
+		forecastDatas := wind.MakeForecastData(ForecastURL, ForecastFilePath)
 
-		text := forecastDatas.MakeWindReport(limitSpeed)
+		text := forecastDatas.MakeWindReport(LimitSpeed)
 
 		responseMessage(w, message.OriginalMessage, "", text)
 		return

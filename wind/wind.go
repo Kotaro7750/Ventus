@@ -147,7 +147,7 @@ func isRequired(text string) (bool, linefeed bool) {
 }
 
 // IsExceededLimit judges if windspeed exceed limit
-func (forecastData *ForecastData) IsExceededLimit(limit int) (bool, string) {
+func (forecastData *ForecastData) isExceededLimit(limit int) (bool, string) {
 	isExceed := false
 	res := ""
 	if forecastData.WindSpeedMidNight >= limit {
@@ -174,7 +174,7 @@ func (forecastData *ForecastData) IsExceededLimit(limit int) (bool, string) {
 }
 
 //MaxSpeed returns maxspeed and it's time
-func (forecastData *ForecastData) MaxSpeed() (int, string) {
+func (forecastData *ForecastData) maxSpeed() (int, string) {
 	max := -1
 	res := ""
 	if forecastData.WindSpeedMidNight > max {
@@ -209,12 +209,12 @@ func (forecastDatas ForecastDatas) MakeWindReport(limit int) string {
 
 	for i := 0; i < forecastDataNum; i++ {
 		forecastData := forecastDatas[i]
-		if dayMax, res := forecastData.MaxSpeed(); dayMax > max {
+		if dayMax, res := forecastData.maxSpeed(); dayMax > max {
 			max = dayMax
 			maxDay = forecastData.Date
 			maxTime = res
 		}
-		if isExceed, res := forecastData.IsExceededLimit(limit); isExceed {
+		if isExceed, res := forecastData.isExceededLimit(limit); isExceed {
 			exceedLimit += res
 		}
 	}

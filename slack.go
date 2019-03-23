@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/Kotaro7750/Ventus/wind"
 	"github.com/nlopes/slack"
 )
 
@@ -13,6 +14,7 @@ const (
 	actionWind   = "wind"
 	actionOrder  = "order"
 	actionCancel = "cancel"
+	color        = "#1e90ff"
 )
 
 type SlackListener struct {
@@ -56,21 +58,21 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	// value is passed to message handler when request is approved.
 	attachment := slack.Attachment{
 		Text:       "なあに？",
-		Color:      "#f9a41b",
+		Color:      color,
 		CallbackID: "command",
 		Actions: []slack.AttachmentAction{
 			{
 				Name:  actionWind,
 				Text:  "風速",
 				Type:  "button",
-				Style: "danger",
+				Style: "primary",
 			},
 
 			{
 				Name:  actionOrder,
 				Text:  "広報物発注板",
 				Type:  "button",
-				Style: "danger",
+				Style: "default",
 			},
 
 			{
@@ -93,6 +95,21 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 	return nil
 }
 
-func (s *SlackListener) PostWindReport(text) {
+// PostWindReport returns windreport
+func (s *SlackListener) PostWindReport() {
+	forecastDatas := wind.MakeForecastData(ForecastURL, ForecastFilePath)
 
+	text := forecastDatas.MakeWindReport(LimitSpeed)
+
+	msgOptText := slack.MsgOptionText("", true)
+	attachment := slack.Attachment{
+		Text:  text,
+		Color: color,
+	}
+
+	msgOptAttachment := slack.MsgOptionAttachments(attachment)
+
+	if _, _, err := s.client.PostMessage(s.channelID, msgOptText, msgOptAttachment); err != nil {
+		log.Printf("failed to post message: %s", err)
+	}
 }

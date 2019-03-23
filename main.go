@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/carlescere/scheduler"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nlopes/slack"
 )
@@ -51,6 +52,12 @@ func _main(args []string) int {
 		channelID: env.ChannelID,
 	}
 	go slackListener.ListenAndResponse()
+
+	job := func() {
+		slackListener.PostWindReport()
+	}
+
+	scheduler.Every().Day().At("12:40").Run(job)
 
 	// Register handler to receive interactive message
 	// responses from slack (kicked by user action)
