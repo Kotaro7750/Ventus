@@ -8,8 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	//"github.com/Kotaro7750/Ventus/wind"
-	"./wind"
+	"github.com/Kotaro7750/Ventus/wind"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nlopes/slack"
 )
