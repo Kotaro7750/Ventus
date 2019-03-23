@@ -8,8 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	//"github.com/Kotaro7750/Ventus/wind"
-	"./wind"
+	"github.com/Kotaro7750/Ventus/wind"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nlopes/slack"
 )
@@ -72,32 +71,8 @@ func (h interactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case actionWind:
 
 		forecastDatas := wind.MakeForecastData(forecastURL, forecastFilePath)
-		forecastDataNum := len(forecastDatas)
 
-		text := "この" + strconv.Itoa(forecastDataNum) + "日間の最大風速は"
-		exceedLimit := ""
-		max := -1
-		maxDay := ""
-		maxTime := ""
-
-		for i := 0; i < forecastDataNum; i++ {
-			forecastData := forecastDatas[i]
-			if dayMax, res := forecastData.MaxSpeed(); dayMax > max {
-				max = dayMax
-				maxDay = forecastData.Date
-				maxTime = res
-			}
-			if isExceed, res := forecastData.IsExceededLimit(limitSpeed); isExceed {
-				exceedLimit += res
-			}
-		}
-
-		text += maxDay + maxTime + "の" + strconv.Itoa(max) + "m/sだよ！\n" + strconv.Itoa(limitSpeed) + "m/sを超える日は"
-		if exceedLimit != "" {
-			text += exceedLimit + "だよ〜！"
-		} else {
-			text += "ありません！"
-		}
+		text := forecastDatas.MakeWindReport(limitSpeed)
 
 		responseMessage(w, message.OriginalMessage, "", text)
 		return

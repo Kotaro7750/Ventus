@@ -92,3 +92,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent) error {
 
 	return nil
 }
+
+func (s *SlackListener) PostWindReport(text) {
+
+}

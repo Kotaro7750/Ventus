@@ -29,8 +29,10 @@ type ForecastData struct {
 	WindSpeedNight     int
 }
 
+type ForecastDatas []ForecastData
+
 //MakeForecastData returns array of ForecastData
-func MakeForecastData(url string, filePath string) []ForecastData {
+func MakeForecastData(url string, filePath string) ForecastDatas {
 	saveForecastPage(url, filePath)
 	formateForecastPage(filePath)
 
@@ -193,4 +195,35 @@ func (forecastData *ForecastData) MaxSpeed() (int, string) {
 	}
 
 	return max, res
+}
+
+// MakeWindReport returns windreport
+func (forecastDatas ForecastDatas) MakeWindReport(limit int) string {
+	forecastDataNum := len(forecastDatas)
+
+	text := "この" + strconv.Itoa(forecastDataNum) + "日間の最大風速は"
+	exceedLimit := ""
+	max := -1
+	maxDay := ""
+	maxTime := ""
+
+	for i := 0; i < forecastDataNum; i++ {
+		forecastData := forecastDatas[i]
+		if dayMax, res := forecastData.MaxSpeed(); dayMax > max {
+			max = dayMax
+			maxDay = forecastData.Date
+			maxTime = res
+		}
+		if isExceed, res := forecastData.IsExceededLimit(limit); isExceed {
+			exceedLimit += res
+		}
+	}
+
+	text += maxDay + maxTime + "の" + strconv.Itoa(max) + "m/sだよ！\n" + strconv.Itoa(limit) + "m/sを超える日は"
+	if exceedLimit != "" {
+		text += exceedLimit + "だよ〜！"
+	} else {
+		text += "ありません！"
+	}
+	return text
 }
